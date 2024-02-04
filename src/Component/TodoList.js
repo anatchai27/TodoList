@@ -9,86 +9,60 @@ function TodoList() {
   const [vegList, setVegList] = useState([]);
   const [timeouts, setTimeouts] = useState({});
 
-  const moveItem = (item, index) => {
-    try {
-      setMainList(mainList.filter((objMain) => objMain !== item));
+  const handleTimeout = (item) => {
+    const timeoutId = setTimeout(() => {
+      setMainList((prevMainList) => [...prevMainList, item]);
       if (item.type === "Fruit") {
-        setFruitList([...fruitList, item]);
+        setFruitList((prevFruitList) =>
+          prevFruitList.filter((fruit) => fruit.name !== item.name)
+        );
       } else {
-        setVegList([...vegList, item]);
+        setVegList((prevVegList) =>
+          prevVegList.filter((veg) => veg.name !== item.name)
+        );
       }
-      TimeRemove(item);
-    } catch (error) {}
-  };
-
-  const reMoveFruit = (item, index) => {
-    try {
-      // TimeRemove(item);
-      //TODO  If there's an existing timeout for the item, clear it
-      if (timeouts[item.name]) {
-        clearTimeout(timeouts[item.name]);
-      }
-      setFruitList(fruitList.filter((objFruit) => objFruit !== item));
-      setMainList([...mainList, ...arrageList(item)]);
-      // TODO the timeout ID from the timeouts object
-      setTimeouts((oldTimeouts) => {
-        const newTimeouts = { ...oldTimeouts };
+      setTimeouts((prevTimeouts) => {
+        const newTimeouts = { ...prevTimeouts };
         delete newTimeouts[item.name];
         return newTimeouts;
       });
-    } catch (error) {}
-  };
-  const reMoveVegetable = (item, index) => {
-    try {
-      //TODO  If there's an existing timeout for the item, clear it
-      if (timeouts[item.name]) {
-        clearTimeout(timeouts[item.name]);
-      }
-      setVegList(vegList.filter((objVeg) => objVeg !== item));
-      setMainList([...mainList, ...arrageList(item)]);
-      // TODO the timeout ID from the timeouts object
-      setTimeouts((oldTimeouts) => {
-        const newTimeouts = { ...oldTimeouts };
-        delete newTimeouts[item.name];
-        return newTimeouts;
-      });
-    } catch (error) {}
+    }, 5000);
+
+    setTimeouts((prevTimeouts) => ({
+      ...prevTimeouts,
+      [item.name]: timeoutId,
+    }));
   };
 
-  const TimeRemove = (item) => {
-    try {
-      //TODO  If there's an existing timeout for the item, clear it
-      if (timeouts[item.name]) {
-        clearTimeout(timeouts[item.name]);
-      }
+  const moveItem = (item, index) => {
+    setMainList((prevMainList) => prevMainList.filter((_, i) => i !== index));
+    if (item.type === "Fruit") {
+      setFruitList((prevFruitList) => [...prevFruitList, item]);
+    } else {
+      setVegList((prevVegList) => [...prevVegList, item]);
+    }
+    handleTimeout(item);
+  };
 
-      // Set a timer to move the item back to the main list
-      const timeoutId = setTimeout(() => {
-        setMainList((oldItems) => [...oldItems, item]);
-        if (item.type === "Fruit") {
-          setFruitList((oldFruitItems) =>
-            oldFruitItems.filter((oldItem) => oldItem.name !== item.name)
-          );
-        } else {
-          setVegList((oldVegetableItems) =>
-            oldVegetableItems.filter((oldItem) => oldItem.name !== item.name)
-          );
-        }
+  const removeItemFromCategory = (item, categorySetter) => {
+    clearTimeout(timeouts[item.name]);
+    categorySetter((prevList) =>
+      prevList.filter((currentItem) => currentItem.name !== item.name)
+    );
+    setMainList((prevMainList) => [...prevMainList, item]);
+    setTimeouts((prevTimeouts) => {
+      const newTimeouts = { ...prevTimeouts };
+      delete newTimeouts[item.name];
+      return newTimeouts;
+    });
+  };
 
-        // TODO the timeout ID from the timeouts object
-        setTimeouts((oldTimeouts) => {
-          const newTimeouts = { ...oldTimeouts };
-          delete newTimeouts[item.name];
-          return newTimeouts;
-        });
-      }, 5000);
+  const reMoveFruit = (item) => {
+    removeItemFromCategory(item, setFruitList);
+  };
 
-      //TODO Store the timeout ID in the timeouts object
-      setTimeouts((oldTimeouts) => ({
-        ...oldTimeouts,
-        [item.name]: timeoutId,
-      }));
-    } catch (error) {}
+  const reMoveVegetable = (item) => {
+    removeItemFromCategory(item, setVegList);
   };
 
   return (
