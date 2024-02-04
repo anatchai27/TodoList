@@ -1,17 +1,31 @@
 import React from "react";
 
-export const Column = ({}) => {
-  <div className="column">
-    <h2>Item</h2>
-    <ul>
-      <li>Orange</li>
-      <li>Pineapple</li>
-      <li>Cucumber</li>
-      <li>Watermelon</li>
-      <li>Carrot</li>
-      <li>Apple</li>
-      <li>Tomato</li>
-    </ul>
-  </div>;
+export const Column = ({ headName, ListData, onClickList }) => {
+  return (
+    <>
+      <div className="column">
+        <h2>{headName}</h2>
+        <ul key={0}>
+          {ListData.length > 0 ? (
+            <>
+              {ListData.map((objList, index) => (
+                <>
+                  <li key={index} onClick={() => onClickList(objList, index)}>
+                    {objList.name}
+                  </li>
+                </>
+              ))}
+            </>
+          ) : (
+            <></>
+          )}
+        </ul>
+      </div>
+    </>
+  );
 };
-Column.DefaultProps = {};
+Column.defaultProps = {
+  headName: "",
+  ListData: [],
+  onClickList: () => {},
+};
