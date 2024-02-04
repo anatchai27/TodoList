@@ -7,6 +7,7 @@ function TodoList() {
   const [mainList, setMainList] = useState(Init);
   const [fruitList, setFruitList] = useState([]);
   const [vegList, setVegList] = useState([]);
+  const [timeouts, setTimeouts] = useState({});
 
   const moveItem = (item, index) => {
     try {
@@ -22,33 +23,71 @@ function TodoList() {
 
   const reMoveFruit = (item, index) => {
     try {
+      // TimeRemove(item);
+      //TODO  If there's an existing timeout for the item, clear it
+      if (timeouts[item.name]) {
+        clearTimeout(timeouts[item.name]);
+      }
       setFruitList(fruitList.filter((objFruit) => objFruit !== item));
       setMainList([...mainList, ...arrageList(item)]);
+      // TODO the timeout ID from the timeouts object
+      setTimeouts((oldTimeouts) => {
+        const newTimeouts = { ...oldTimeouts };
+        delete newTimeouts[item.name];
+        return newTimeouts;
+      });
     } catch (error) {}
   };
   const reMoveVegetable = (item, index) => {
     try {
+      //TODO  If there's an existing timeout for the item, clear it
+      if (timeouts[item.name]) {
+        clearTimeout(timeouts[item.name]);
+      }
       setVegList(vegList.filter((objVeg) => objVeg !== item));
       setMainList([...mainList, ...arrageList(item)]);
+      // TODO the timeout ID from the timeouts object
+      setTimeouts((oldTimeouts) => {
+        const newTimeouts = { ...oldTimeouts };
+        delete newTimeouts[item.name];
+        return newTimeouts;
+      });
     } catch (error) {}
   };
 
   const TimeRemove = (item) => {
     try {
-      setTimeout(() => {
-        console.log(item);
-        console.log(mainList);
-        let exists = mainList.some(
-          (objItem) => JSON.stringify(objItem) === JSON.stringify(item)
-        );
-        if (item.type === "Fruit" && exists) {
-          setFruitList(fruitList.filter((objFruit) => objFruit !== item));
-          setMainList([...mainList, ...arrageList(item)]);
-        } else if (item.type === "Vegetable" && exists) {
-          setVegList(vegList.filter((objVeg) => objVeg !== item));
-          setMainList([...mainList, ...arrageList(item)]);
+      //TODO  If there's an existing timeout for the item, clear it
+      if (timeouts[item.name]) {
+        clearTimeout(timeouts[item.name]);
+      }
+
+      // Set a timer to move the item back to the main list
+      const timeoutId = setTimeout(() => {
+        setMainList((oldItems) => [...oldItems, item]);
+        if (item.type === "Fruit") {
+          setFruitList((oldFruitItems) =>
+            oldFruitItems.filter((oldItem) => oldItem.name !== item.name)
+          );
+        } else {
+          setVegList((oldVegetableItems) =>
+            oldVegetableItems.filter((oldItem) => oldItem.name !== item.name)
+          );
         }
-      }, 1000 * 5);
+
+        // TODO the timeout ID from the timeouts object
+        setTimeouts((oldTimeouts) => {
+          const newTimeouts = { ...oldTimeouts };
+          delete newTimeouts[item.name];
+          return newTimeouts;
+        });
+      }, 5000);
+
+      //TODO Store the timeout ID in the timeouts object
+      setTimeouts((oldTimeouts) => ({
+        ...oldTimeouts,
+        [item.name]: timeoutId,
+      }));
     } catch (error) {}
   };
 
